@@ -11,7 +11,6 @@ Puppet::Functions.create_function(:onepassword_lookup) do
   end
 
   def onepassword_lookup(key, options, context)
-
     return context.cached_value(key) if context.cache_has_key(key)
     unless options.include?('vaults') || options.include?('vault')
       #TRANSLATORS 'onepassword_lookup':, 'path', 'paths' 'glob', 'globs', 'mapped_paths', and lookup_key should not be translated
@@ -64,7 +63,6 @@ Puppet::Functions.create_function(:onepassword_lookup) do
     if var.nil?
       context.not_found
     else
-      # Puppet.notice(get_password_from_item(options['url'], options['token'], options['get_all_fields'] || false, var))  # Wird immer angezeigt
       if field_to_return        # if the key was in the format op://vault/item/field, then we need to return only the specified field from the item
           context.cache(key,get_password_from_item(options['url'], options['token'], options['get_all_fields'] || false, var)[ field_to_return ])
       else
