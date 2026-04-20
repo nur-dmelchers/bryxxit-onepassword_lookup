@@ -45,12 +45,51 @@ root@puppet:/# puppet lookup dev-db-login2
 - username: web
   password: web
 ```
+
+#### Direct 1Password URL Lookups
+
+You can also use direct 1Password URLs for lookups in the format `op://vault/item/field`. This skips vault iteration and directly retrieves the specified field:
+
+```shell
+root@puppet:/# puppet lookup 'op://production/postgresql/password'
+--- geheim123
+root@puppet:/# puppet lookup 'op://production/postgresql/username'
+--- admin
+```
+
+**Advantages:**
+- Better performance (no vault iteration)
+- More explicit and clear intent
+- Access to any field, not just password
+
+These can be referenced in a puppet manifest using:
+```puppet
+$var = lookup('op://production/postgresql/password')
+$var = lookup('op://production/postgresql/username')
+```
+
+#### Standard Hiera Dot-Notation
+
 These can be referenced in a puppet manifest using:
 ```puppet
 $var = lookup('dev-db-pass')
 $var = lookup('dev-db-login2.password')
 $var = lookup('dev-db-login2.password', undef, undef, 'Default Value')
 ```
+
+You can also use the Hiera interpolation syntax `%{lookup(...)}` in YAML files:
+```yaml
+database:
+  username: %{lookup('dev-db-login.username')}
+  password: %{lookup('dev-db-login.password')}
+  host: db.example.com
+  
+production:
+  db_user: %{lookup('op://production/postgresql/username')}
+  db_pass: %{lookup('op://production/postgresql/password')}
+```
+
+This allows you to reference 1Password credentials directly in your Hiera YAML data files.
 
 #### Getting All Fields
 
@@ -70,4 +109,11 @@ text2: test2
 These can be referenced in puppet via:
 ```puppet
 $var = lookup('Test Credential.text2')
+```
+
+Or in YAML files:
+```yaml
+my_config:
+  username: %{lookup('Test Credential.username')}
+  custom_field: %{lookup('Test Credential.text2')}
 ```
