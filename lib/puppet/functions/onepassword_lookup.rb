@@ -12,6 +12,15 @@ Puppet::Functions.create_function(:onepassword_lookup) do
 
   def onepassword_lookup(key, options, context)
     return context.cached_value(key) if context.cache_has_key(key)
+    # if opurls_only is set to true, then we will only look for keys that start with op://, and if the key does not start with op://, we will return not_found.
+    # This allows for using this lookup_key function in hiera.yaml for all lookups, but only actually using it for keys that start with op://, and not having it interfere with other lookups.
+    if options.include?('opurls_only') && options['opurls_only'] == true
+      if not key.start_with?("op://")
+        context.not_found
+        return
+      end
+    end
+
     unless options.include?('vaults') || options.include?('vault')
       #TRANSLATORS 'onepassword_lookup':, 'path', 'paths' 'glob', 'globs', 'mapped_paths', and lookup_key should not be translated
       raise ArgumentError,
